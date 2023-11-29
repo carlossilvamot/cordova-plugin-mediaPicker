@@ -150,32 +150,48 @@ public class MediaPicker extends CordovaPlugin {
         }
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         try {
-            if(requestCode==200&&resultCode==PickerConfig.RESULT_CODE){
-                final ArrayList<Media> select=intent.getParcelableArrayListExtra(PickerConfig.EXTRA_RESULT);
-                final JSONArray jsonArray=new JSONArray();
+            if(requestCode == 200 && resultCode == PickerConfig.RESULT_CODE){
+                final ArrayList<Media> select = intent.getParcelableArrayListExtra(PickerConfig.EXTRA_RESULT);
+                final JSONArray jsonArray = new JSONArray();
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
                         try {
-                            int index=0;
-                            for(Media media:select){
-                                JSONObject object=new JSONObject();
-                                object.put("path",media.path);
-                                object.put("uri",Uri.fromFile(new File(media.path)));//Uri.fromFile(file).toString() || [NSURL fileURLWithPath:filePath] absoluteString]
-                                object.put("size",media.size);
-                                object.put("name",media.name);
-                                object.put("index",index);
-                                object.put("mediaType",media.mediaType==3?"video":"image");
+                            int index = 0;
+                            for(Media media : select){
+                                // here we copy file to cache dir because of permission issues on android API >= 32
+                                File sourceFile = new File(media.path);
+                                File cacheDir = cordova.getActivity().getExternalCacheDir();
+                                File destinationFile = new File(cacheDir, sourceFile.getName());
+
+                                BufferedInputStream in = new BufferedInputStream(new FileInputStream(sourceFile));
+                                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(destinationFile));
+
+                                byte[] buffer = new byte[500000]; // Buffer size, can be adjusted according to needs
+                                int length;
+                                while ((length = in.read(buffer)) > 0) {
+                                    out.write(buffer, 0, length);
+                                }
+
+                                in.close();
+                                out.close();
+
+                                JSONObject object = new JSONObject();
+                                object.put("path", destinationFile.getAbsolutePath());
+                                object.put("uri", Uri.fromFile(destinationFile));
+                                object.put("size", destinationFile.length());
+                                object.put("name", destinationFile.getName());
+                                object.put("index", index);
+                                object.put("mediaType", media.mediaType == 3 ? "video" : "image");
                                 jsonArray.put(object);
                                 index++;
                             }
                             MediaPicker.this.callback.success(jsonArray);
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
