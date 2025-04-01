@@ -7,9 +7,6 @@
   </js-module>
 
   <platform name="android">
-    <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:requestLegacyExternalStorage="true" />
-    </edit-config>
     <config-file parent="/*" target="res/xml/config.xml">
       <feature name="MediaPicker">
         <param name="android-package" value="com.dmc.mediaPickerPlugin.MediaPicker"/>
@@ -20,7 +17,7 @@
         <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:minSdkVersion = "33"/>
         <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"  android:minSdkVersion = "33"/>
         <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"  android:minSdkVersion = "33"/>
-        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+<!--         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/> -->
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
     </config-file>
 
